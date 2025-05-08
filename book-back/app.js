@@ -3,12 +3,13 @@ const cors = require('cors');
 const morgan = require('morgan');
 const session = require('express-session');
 const fileStore = require('session-file-store')(session);
+const path = require('path');
 
 require("dotenv").config({path: "./mysql/.env"});
 
 // express 인스턴스 생성
 const app = express();
-const port = 3000;
+const port = 3001;
 const url = `http://localhost:${port}`;
 
 app.use(session({
@@ -37,6 +38,7 @@ app.get("/", (req, res) => {
 })
 
 app.use("/api/book", require('./routers/book'));
+app.use('/api/images', express.static(path.join(__dirname, 'public/images')));
 
 app.listen(port, () => {
   console.log(`${url}에서 서버가 실행됨`);

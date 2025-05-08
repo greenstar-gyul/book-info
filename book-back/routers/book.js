@@ -2,10 +2,11 @@ const express = require("express");
 const router = express.Router();
 const query = require('../mysql');
 const multer = require('multer');
+const path = require('path');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, '../public/images/');
+    cb(null, path.join(__dirname, "../public/images/"));
   },
   filename: (req, file, cb) => {
     const originalFileName = file.originalname.split('.');
@@ -16,14 +17,20 @@ const storage = multer.diskStorage({
     cb(null, filename);
   }
 })
-const upload = multer({storage:storage});
+const upload = multer({storage});
 
 router.get("", async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const size = parseInt(req.query.size) || 12;
+  const offset = (page - 1) * size;
+
   try {
     // console.log("전체 목록 요청");
-    const result = await query("selectList", null);
+    const books = await query("selectList", [size, offset]);
+    const countResult = await query("count", null);
+    const total = countResult[0].total;
     // console.log(result);
-    res.send(result);
+    res.send({ books, total });
   }
   catch(err) {
     // console.log(err);
@@ -31,9 +38,14 @@ router.get("", async (req, res) => {
   }
 });
 
-router.post("", async (req, res) => { 
+router.post("", upload.single('file'), async (req, res) => { 
   try {
-    const result = await query("insertBook", req.body);
+    const book = JSON.parse(req.body.book);
+    console.log("--------");
+    console.log(book);
+    const file = req.file ? req.file.filename : null;
+    book.book_cover = file;
+    const result = await query("insertBook", book);
     res.send('추가 완료'); 
   }
   catch(err) {
@@ -53,21 +65,25 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => { 
-
-
+router.put("/:id", upload.single('file'), async (req, res) => {
   const id = req.params.id;
-  const book = req.query;
-  console.log(book);
-  const data = [book.summary, book.file, id];
-  try {
-    const result = await query('updateBook', data);
-    res.send('업데이트 완료');
+  const summary = req.body.summary;
+  const file = req.file ? req.file.filename : null;
+
+  if (!summary) {
+    return res.status(400).send("요약 정보가 없습니다.");
   }
-  catch (err) {
-    res.send(err);
+
+  try {
+    const data = [summary, file, id]; // file은 null일 수 있음
+    const result = await query('updateBook', data);
+    res.send("업데이트 완료");
+  } catch (err) {
+    console.error("DB 업데이트 에러:", err);
+    res.status(500).send("서버 에러");
   }
 });
+
 
 router.delete("/:id", async (req, res) => { 
   const id = req.params.id;

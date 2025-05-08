@@ -1,6 +1,6 @@
 <script setup>
 import axios from 'axios';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -18,6 +18,10 @@ onMounted(() => {
   loadBook();
 })
 
+watch(() => route.fullPath, () => {
+  loadAllBooks();
+});
+
 </script>
 <template>
 <div class="container mt-5" v-if="book">
@@ -29,7 +33,7 @@ onMounted(() => {
           <!-- 책 표지 -->
           <div class="col-md-4 text-center">
             <img
-              :src="'../../public/book-covers/' + book.book_cover"
+              :src="'/api/images/' + book.book_cover"
               alt="책 표지"
               class="img-fluid rounded shadow-sm"
               style="max-height: 280px;"

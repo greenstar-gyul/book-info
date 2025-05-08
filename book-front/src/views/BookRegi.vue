@@ -13,10 +13,26 @@ const book = ref({
   publisher: "",
   isbn: ""
 });
+const file = ref('');
+const previewImage = ref(null);
+
+function setFile(event) {
+  file.value = event.target.files[0];
+  if (file.value) {
+    previewImage.value = URL.createObjectURL(file.value);
+  }
+}
 
 const registerBook = async function() {
-  const result = await axios.post(`/api/book/${bookId.value}`, book.value);
-  router.push('/');
+  // let formData = new FormData(); 
+  // formData.append("file", file.value);
+  let formData = new FormData(); // formData 객체를 생성한다.
+
+  formData.append("file", file.value);
+  formData.append("book", JSON.stringify(book.value));
+
+  const result = await axios.post(`/api/book`, formData, { headers: {"Content-Type": "multipart/form-data"}, });
+  router.push(`/`);
 }
 
 </script>
@@ -63,6 +79,15 @@ const registerBook = async function() {
           <div class="mb-3">
             <label class="form-label">ISBN</label>
             <input type="text" class="form-control" v-model="book.isbn" />
+          </div>
+
+          <!-- 도서 표지 등록 -->
+          <div class="mb-3">
+            <label class="form-label">도서 표지 업로드</label>
+            <input type="file" class="form-control" @change="setFile" accept="image/*" />
+            <div v-if="previewImage" class="mt-3 text-center">
+              <img :src="`${previewImage}`" alt="도서 표지 미리보기" class="img-thumbnail" style="max-height: 200px;" />
+            </div>
           </div>
 
           <!-- 버튼 영역 -->

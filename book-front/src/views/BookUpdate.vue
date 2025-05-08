@@ -8,9 +8,13 @@ const router = useRouter();
 const bookId = ref('');
 const book = ref('');
 const file = ref('');
+const previewImage = ref(null);
 
 function setFile(event) {
   file.value = event.target.files[0];
+  if (file.value) {
+    previewImage.value = URL.createObjectURL(file.value);
+  }
 }
 
 const loadBook = async function() {
@@ -82,11 +86,12 @@ onMounted(() => {
             <input type="text" class="form-control" v-model="book.isbn" readonly />
           </div>
 
+          <!-- 도서 표지 등록 -->
           <div class="mb-3">
             <label class="form-label">도서 표지 업로드</label>
             <input type="file" class="form-control" @change="setFile" accept="image/*" />
             <div v-if="previewImage" class="mt-3 text-center">
-              <img :src="previewImage" alt="도서 표지 미리보기" class="img-thumbnail" style="max-height: 200px;" />
+              <img :src="`${previewImage}`" alt="도서 표지 미리보기" class="img-thumbnail" style="max-height: 200px;" />
             </div>
           </div>
 
