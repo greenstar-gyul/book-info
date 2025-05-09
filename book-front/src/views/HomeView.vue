@@ -6,7 +6,7 @@ import axios from 'axios';
 const route = useRoute();
 const books = ref([]);
 const currentPage = ref(1);
-const itemsPerPage = 12;
+const itemsPerPage = 4;
 const totalItems = ref(0);
 
 // 📥 서버에서 페이지 단위로 불러오기

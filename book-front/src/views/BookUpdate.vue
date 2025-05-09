@@ -22,6 +22,7 @@ const loadBook = async function() {
   console.log(bookId.value);
   const result = await axios.get(`/api/book/${bookId.value}`);
   book.value = await result.data[0];
+  previewImage.value = await book.value.book_cover;
 }
 
 const updateBook = async function() {
@@ -29,7 +30,7 @@ const updateBook = async function() {
   // formData.append("file", file.value);
   let formData = new FormData(); // formData 객체를 생성한다.
 
-  formData.append("file", file.value);
+  formData.append("file", file.value ? file.value : book.book_cover);
   formData.append("summary", book.value.summary);
 
   const result = await axios.put(`/api/book/${bookId.value}`, formData, { headers: {"Content-Type": "multipart/form-data"}, });
@@ -91,7 +92,7 @@ onMounted(() => {
             <label class="form-label">도서 표지 업로드</label>
             <input type="file" class="form-control" @change="setFile" accept="image/*" />
             <div v-if="previewImage" class="mt-3 text-center">
-              <img :src="`${previewImage}`" alt="도서 표지 미리보기" class="img-thumbnail" style="max-height: 200px;" />
+              <img :src="`${'/api/images/' + previewImage}`" alt="도서 표지 미리보기" class="img-thumbnail" style="max-height: 200px;" />
             </div>
           </div>
 
